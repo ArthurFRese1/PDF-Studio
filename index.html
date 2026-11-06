@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0612" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>PDF-Studio</title>
+</head>
+<body>
+  <!-- ÚNICA estrutura de interface: um cabeçalho, uma barra de abas, um visualizador. -->
+  <div id="app" class="sidebar-open">
+    <div class="topchrome" id="topchrome">
+      <div class="topchrome-inner">
+        <header class="header" id="header">
+          <button class="icon-btn" id="btnSidebar" data-icon="menu" title="Biblioteca de arquivos" aria-label="Biblioteca de arquivos"></button>
+          <div class="brand"><span class="brand-mark"></span><span class="brand-name">PDF-Studio</span></div>
+          <div class="header-actions">
+            <button class="btn" id="btnSearch" data-icon="search" title="Buscar (Ctrl+F)"><span class="lbl">Buscar</span></button>
+            <button class="btn" id="btnSave" data-icon="save" title="Salvar no arquivo original"><span class="lbl">Salvar</span></button>
+            <button class="btn" id="btnSaveCopy" data-icon="copy" title="Salvar uma cópia"><span class="lbl">Salvar cópia</span></button>
+            <button class="btn" id="btnSettings" data-icon="settings" title="Configurações"><span class="lbl">Configurações</span></button>
+          </div>
+        </header>
+
+        <div class="searchbar" id="searchbar" hidden>
+          <input id="searchInput" type="search" placeholder="Buscar no documento atual…" autocomplete="off" enterkeyhint="search" />
+          <span class="search-count" id="searchCount" aria-live="polite"></span>
+          <button class="icon-btn" id="searchPrev" data-icon="chevron-up" title="Ocorrência anterior" aria-label="Ocorrência anterior"></button>
+          <button class="icon-btn" id="searchNext" data-icon="chevron-down" title="Próxima ocorrência" aria-label="Próxima ocorrência"></button>
+          <button class="icon-btn" id="searchClose" data-icon="close" title="Fechar busca" aria-label="Fechar busca"></button>
+        </div>
+
+        <nav class="tabs" id="tabs" role="tablist" aria-label="Documentos abertos" hidden></nav>
+      </div>
+    </div>
+
+    <div class="body">
+      <aside class="sidebar" id="sidebar" aria-label="Biblioteca de arquivos">
+        <div class="sidebar-head">
+          <h2 id="libraryTitle">Biblioteca</h2>
+          <button class="icon-btn" id="btnCloseSidebar" data-icon="close" title="Fechar painel" aria-label="Fechar painel"></button>
+        </div>
+        <div class="sidebar-actions">
+          <button class="btn primary" id="btnOpenFolder" data-icon="folder"><span>Abrir pasta</span></button>
+          <button class="btn" id="btnOpenFiles" data-icon="file"><span>Abrir PDFs</span></button>
+        </div>
+        <p class="sidebar-note" id="libraryNote"></p>
+        <div class="tree" id="tree" role="tree"></div>
+      </aside>
+      <div class="backdrop" id="backdrop"></div>
+
+      <main class="viewer-area" id="viewerArea">
+        <div class="viewer-container" id="viewerContainer" style="position:absolute;inset:0;overflow:auto">
+          <div id="viewer" class="pdfViewer"></div>
+        </div>
+
+        <div class="empty" id="emptyState">
+          <div class="empty-card">
+            <div class="empty-mark"></div>
+            <h1>Nenhum documento aberto</h1>
+            <p>Abra uma pasta para navegar pela sua coleção ou escolha PDFs avulsos.</p>
+            <div class="empty-actions">
+              <button class="btn primary" id="emptyOpenFolder" data-icon="folder"><span>Abrir pasta</span></button>
+              <button class="btn" id="emptyOpenFiles" data-icon="file"><span>Abrir PDFs</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="loading" id="loadingOverlay" hidden><div class="spinner"></div><span id="loadingText">Carregando…</span></div>
+        <div class="notices" id="notices"></div>
+
+        <div class="floatbar" id="floatbar" hidden>
+          <button class="icon-btn" id="fbPrev" data-icon="chevron-up" title="Página anterior" aria-label="Página anterior"></button>
+          <span class="fb-label" id="pageLabel">1 / 1</span>
+          <button class="icon-btn" id="fbNext" data-icon="chevron-down" title="Próxima página" aria-label="Próxima página"></button>
+          <span class="fb-sep"></span>
+          <button class="icon-btn" id="fbZoomOut" data-icon="zoom-out" title="Diminuir zoom" aria-label="Diminuir zoom"></button>
+          <span class="fb-label" id="zoomLabel">100%</span>
+          <button class="icon-btn" id="fbZoomIn" data-icon="zoom-in" title="Aumentar zoom" aria-label="Aumentar zoom"></button>
+          <button class="icon-btn" id="fbFit" data-icon="fit" title="Alternar largura / página inteira" aria-label="Ajustar"></button>
+          <span class="fb-sep"></span>
+          <button class="icon-btn" id="btnMode" data-icon="rows" title="Modo de leitura" aria-label="Modo de leitura"></button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <input type="file" id="inputFolder" webkitdirectory multiple hidden />
+  <input type="file" id="inputFiles" accept="application/pdf,.pdf" multiple hidden />
+
+  <dialog id="settingsDialog" class="dialog">
+    <form method="dialog">
+      <h2>Configurações</h2>
+      <label class="field"><span>Zoom inicial</span>
+        <select id="setZoom">
+          <option value="page-width">Ajustar à largura</option>
+          <option value="page-fit">Página inteira</option>
+          <option value="auto">Automático</option>
+          <option value="1">100%</option>
+          <option value="1.5">150%</option>
+        </select>
+      </label>
+      <label class="field"><span>Modo de leitura padrão</span>
+        <select id="setMode">
+          <option value="continuous">Rolagem contínua</option>
+          <option value="single">Página individual</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="setAutoHide" /> <span>Ocultar a barra superior ao rolar para baixo</span></label>
+      <label class="check"><input type="checkbox" id="setHighlightAll" /> <span>Destacar todas as ocorrências na busca</span></label>
+      <label class="check"><input type="checkbox" id="setCase" /> <span>Diferenciar maiúsculas e minúsculas na busca</span></label>
+      <p class="hint">As preferências ficam salvas neste navegador (IndexedDB). Os PDFs nunca são armazenados nem enviados a servidores.</p>
+      <div class="dialog-actions">
+        <button type="button" class="btn" id="setReset">Restaurar padrões</button>
+        <button class="btn primary" value="close">Fechar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toasts" aria-live="polite"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

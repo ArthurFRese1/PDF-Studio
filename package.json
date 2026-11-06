@@ -1,0 +1,21 @@
+{
+  "name": "pdf-studio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Leitor e editor de PDFs para fichas de RPG (Vite + PDF.js + pdf-lib)",
+  "scripts": {
+    "predev": "node scripts/copy-pdfjs-assets.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/copy-pdfjs-assets.mjs",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "4.10.38"
+  },
+  "devDependencies": {
+    "vite": "^5.4.11"
+  }
+}
